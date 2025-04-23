@@ -43,8 +43,12 @@ if GOOGLE_API_KEY:
     def chatty_response(user_query):
         context = "\n".join(retrieve_chunks(user_query))
         full_prompt = f"{chatty_prompt}\n\nContext:\n{context}\n\nUser: {user_query}\nChatty:"
-        response = genai.GenerativeModel("gemini-1.5-pro-latest").generate_content(full_prompt)
+    
+        response = genai.GenerativeModel("gemini-1.5-pro-latest").generate_content(
+            full_prompt, generation_config=genai.types.GenerationConfig(
+            temperature=0.3))
         return response.text.strip()
+
 
     # 🎨 Chat UI Header
     st.title("💬 Chatty – Your FBS Financial Assistant")
