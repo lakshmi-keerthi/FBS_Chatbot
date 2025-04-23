@@ -27,7 +27,7 @@ if GOOGLE_API_KEY:
 
     @st.cache_resource
     def embed_chunks(chunks):
-        embeddings = [genai.embed_content(model="models/embedding-001", content=chunk, task_type="retrieval_document")['embedding'] for chunk in chunks]
+        embeddings = [genai.embed_content(model="models/text-embedding-004", content=chunk, task_type="retrieval_document")['embedding'] for chunk in chunks]
         embeddings = np.array(embeddings)
         index = faiss.IndexFlatL2(embeddings.shape[1])
         index.add(embeddings)
@@ -36,7 +36,7 @@ if GOOGLE_API_KEY:
     index, chunk_embeddings = embed_chunks(chunks)
 
     def retrieve_chunks(query, k=5):
-        query_embedding = np.array([genai.embed_content(model="models/embedding-001", content=query, task_type="retrieval_query")['embedding']])
+        query_embedding = np.array([genai.embed_content(model="models/text-embedding-004", content=query, task_type="retrieval_query")['embedding']])
         D, I = index.search(query_embedding, k)
         return [chunks[i] for i in I[0]]
 
