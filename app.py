@@ -12,8 +12,10 @@ with open("FBS_Prompt_v2.md", "r", encoding="utf-8") as f:
 with open("Webpage.md", "r", encoding="utf-8") as f:
     fbs_content = f.read()
 
-# Set your Google API Key securely (or load from environment)
-GOOGLE_API_KEY = st.secrets["GOOGLE_API_KEY"] if "GOOGLE_API_KEY" in st.secrets else st.text_input("Enter your Google API Key:", type="password")
+# Ask for Google API Key via sidebar (secure entry)
+st.sidebar.title("🔐 API Configuration")
+GOOGLE_API_KEY = st.sidebar.text_input("Enter your Google API Key:", type="password")
+
 if GOOGLE_API_KEY:
     genai.configure(api_key=GOOGLE_API_KEY)
 
@@ -60,3 +62,5 @@ if GOOGLE_API_KEY:
 
     for speaker, text in st.session_state.chat_history:
         st.markdown(f"**{speaker}:** {text}")
+else:
+    st.warning("Please enter your Google API key in the sidebar to continue.")
