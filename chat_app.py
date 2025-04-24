@@ -12,7 +12,6 @@ def safe_rerun():
     except AttributeError:
         st.rerun()
 
-# ---- Helper to Move Between Stages ---- #
 def go_to_stage(stage_name, key=None, value=None):
     if key and value:
         st.session_state.flow_data[key] = value
@@ -46,12 +45,11 @@ elif st.session_state.stage == "investments_goal":
 # ---- Recurring Income Options ---- #
 elif st.session_state.stage == "recurring_income":
     st.title("Recurring Income")
-    st.info("Our investment solutions:\n• Private Credit\n• Structured Note")
-    if st.button("Private Credit Details"):
+    st.subheader("Choose an option:")
+    if st.button("Private Credit"):
         st.info("Private Credit:\nTargeted yields of 8% to 20%.\nDirect security interests in real estate.\nFlexible terms.\nMarket independence.")
-    if st.button("Structured Note Options"):
+    if st.button("Structured Note"):
         go_to_stage("structured_note")
-
     if st.button("Continue to Chat"):
         go_to_stage("chat")
 
@@ -67,6 +65,28 @@ elif st.session_state.stage == "structured_note":
         st.info("Structured Notes combine traditional bonds with derivatives.\nSourced from JP Morgan, Goldman Sachs, etc.\nDiversification benefits.")
     if st.button("Back to Recurring Income"):
         go_to_stage("recurring_income")
+
+# ---- Long-term Investment Info ---- #
+elif st.session_state.stage == "details":
+    priority = st.session_state.flow_data["priority"]
+    goal = st.session_state.flow_data["goal"]
+    st.title(f"{priority} → {goal}")
+    st.subheader("Details:")
+
+    if priority == "Investments":
+        if goal == "Long-term Investment":
+            st.info("Our services:\n• Private Funds\n• Model Portfolio")
+        elif goal == "Portfolio Management":
+            st.info("Diversified portfolios\nGRO model strategy\nClear performance insights.")
+
+    if priority == "Retirement Solutions":
+        if goal == "W2":
+            st.info("• Changing employer? → Talk to an expert.\n• 401(k) transfer? → Talk to an expert.\n• 401(k) reduced? → Strategic Roth Conversions.")
+        elif goal == "Business owner":
+            st.info("Solo 401(k) or plans to attract talent:\n• Traditional 401(k)\n• CBP\n• Pension options.")
+
+    if st.button("Continue to Chat"):
+        go_to_stage("chat")
 
 # ---- Retirement Status ---- #
 elif st.session_state.stage == "retirement_status":
@@ -85,10 +105,15 @@ elif st.session_state.stage == "self_employed":
     st.title("Self-employed (1099)")
     st.subheader("Do you have a solo 401(k)?")
     if st.button("Yes"):
-        st.info("Are you looking to:\n• Increase Contributions\n• Reduce Taxes\n• Unsure")
+        st.subheader("Are you looking to:")
+        if st.button("Increase Contributions"):
+            st.info("Cash Balance Plans can help increase contributions significantly.")
+        if st.button("Reduce Taxes"):
+            st.info("CBPs and Solo 401(k) allow for major tax advantages.")
+        if st.button("Unsure"):
+            st.info("Let's explore what works best in Chatty chat.")
     if st.button("No"):
         st.info("Solo 401(k) offers tax-deferred growth for self-employed individuals.")
-
     if st.button("Continue to Chat"):
         go_to_stage("chat")
 
@@ -104,7 +129,6 @@ elif st.session_state.stage == "w2":
         st.info("Consider Strategic Roth Conversions for tax-free growth.")
     if st.button("None of the above"):
         st.info("Please talk to an expert at FBS.")
-
     if st.button("Continue to Chat"):
         go_to_stage("chat")
 
@@ -115,7 +139,13 @@ elif st.session_state.stage == "business_owner":
     if st.button("1 Employee"):
         go_to_stage("self_employed")
     if st.button("More than 1 Employee"):
-        st.info("Are you looking to attract and retain talent using:\n• Traditional 401(k)\n• CBP\n• Pension options.")
+        st.subheader("Attract and retain talent using:")
+        if st.button("Traditional 401(k)"):
+            st.info("Traditional 401(k)s offer flexibility and tax benefits for employers and employees.")
+        if st.button("CBP"):
+            st.info("Cash Balance Plans allow high contributions and tax savings.")
+        if st.button("Pension"):
+            st.info("Defined benefit pensions provide fixed retirement payouts.")
         if st.button("Continue to Chat"):
             go_to_stage("chat")
 
