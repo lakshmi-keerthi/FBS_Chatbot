@@ -1,90 +1,174 @@
 import streamlit as st
+import google.generativeai as genai
+import faiss
+import numpy as np
+import os
 
-# Session State Initialization
+# ---- Page Config ---- #
+st.set_page_config(page_title="Chatty – FBS Financial Assistant", layout="centered")
+st.title("💬 Chatty – FBS Financial Assistant")
+
+# ---- Session Initialization ---- #
 if "stage" not in st.session_state:
     st.session_state.stage = "start"
     st.session_state.flow_data = {}
     st.session_state.messages = []
 
-# ---- Flowchart Section ---- #
-st.set_page_config(page_title="Chatty – FBS Financial Assistant", layout="centered")
-st.title("💬 Chatty – FBS Financial Assistant")
+# ---- Sidebar for API Key ---- #
+st.sidebar.title("🔐 API Configuration")
+GOOGLE_API_KEY = st.sidebar.text_input("Enter your Google API Key:", type="password")
 
-# --- Stage 1: Financial Priority --- #
-if st.session_state.stage == "start":
-    st.subheader("What is your financial priority?")
-    priority = st.radio("Choose one:", ["Investments", "Retirement Solutions", "Financial Planning"])
-    if st.button("Next"):
-        st.session_state.flow_data["priority"] = priority
-        st.session_state.stage = "goal"
+if GOOGLE_API_KEY:
+    genai.configure(api_key=GOOGLE_API_KEY)
 
-# --- Stage 2: Goal Based on Priority --- #
-elif st.session_state.stage == "goal":
-    priority = st.session_state.flow_data["priority"]
-    st.subheader(f"Your Priority: {priority}")
+    # ---- Load Prompt and Content ---- #
+    with open("FBS_Prompt_v2.md", "r", encoding="utf-8") as f:
+        chatty_prompt = f.read()
 
-    if priority == "Investments":
-        goal = st.radio("What's your primary goal?", ["Recurring Income", "Long-term Investment", "Portfolio Management"])
-    elif priority == "Retirement Solutions":
-        goal = st.radio("What is your employment status?", ["Self-employed (1099)", "W2", "Business owner"])
-    elif priority == "Financial Planning":
-        goal = st.radio("Are you looking for:", ["One-Time Comprehensive Plan", "Annual Planning & Tracking", "Estate Planning"])
+    with open("Webpage.md", "r", encoding="utf-8") as f:
+        fbs_content = f.read()
 
-    if st.button("Next"):
-        st.session_state.flow_data["goal"] = goal
-        st.session_state.stage = "details"
+    # ---- Chunk Content ---- #
+    chunks = fbs_content.split('####')
+    chunks = [f"#### {chunk.strip()}" for chunk in chunks if chunk.strip()]
 
-# --- Stage 3: Show Flow-Based Info --- #
-elif st.session_state.stage == "details":
-    priority = st.session_state.flow_data["priority"]
-    goal = st.session_state.flow_data["goal"]
-    st.subheader(f"{priority} → {goal}")
+    @st.cache_resource
+    def embed_chunks(chunks):
+        embeddings = [genai.embed_content(model="models/text-embedding-004", content=chunk, task_type="retrieval_document")['embedding'] for chunk in chunks]
+        embeddings = np.array(embeddings)
+        index = faiss.IndexFlatL2(embeddings.shape[1])
+        index.add(embeddings)
+        return index, embeddings
 
-    # --- Display messages based on flow --- #
-    if priority == "Investments":
-        if goal == "Recurring Income":
-            st.info("Our investment solutions:\n• Private Credit\n• Structured Note\n• Unsure – Check with Ruchitha.")
-        elif goal == "Long-term Investment":
-            st.info("Our services:\n• Private Funds\n• Model Portfolio")
-        elif goal == "Portfolio Management":
-            st.info("Portfolio Management:\n• Diversified Portfolios\n• GRO model strategy\n• Clear performance insights.")
+    index, chunk_embeddings = embed_chunks(chunks)
 
-    elif priority == "Retirement Solutions":
-        if goal == "Self-employed (1099)":
-            st.info("Solo 401(k) options available.\n• Increase Contributions\n• Reduce Taxes\n• Unsure – Let's discuss.")
-        elif goal == "W2":
-            st.info("• Changing employer? → Talk to an expert.\n• 401(k) transfer? → Talk to an expert.\n• 401(k) reduced? → Strategic Roth Conversions.")
-        elif goal == "Business owner":
-            st.info("• Solo 401(k) or plans to attract talent?\n• Traditional 401(k), CBP, Pension options available.")
+    def retrieve_chunks(query, k=5):
+        query_embedding = np.array([genai.embed_content(model="models/text-embedding-004", content=query, task_type="retrieval_query")['embedding']])
+        D, I = index.search(query_embedding, k)
+        return [chunks[i] for i in I[0]]
 
-    elif priority == "Financial Planning":
-        if goal == "One-Time Comprehensive Plan":
-            st.info("Includes:\n• Retirement projections\n• Investment reviews\n• Flat Fee: $5,000")
-        elif goal == "Annual Planning & Tracking":
-            st.info("Ongoing personalized advice.\n• Fee: $1,000 annually\n• Exclusive after One-Time Plan.")
-        elif goal == "Estate Planning":
-            st.info("Package includes:\n• Living Trust\n• Will\n• Power of Attorney\n• Fee: $2,500")
+    def chatty_response(user_query):
+        context = "\n".join(retrieve_chunks(user_query))
+        # Include history in prompt
+        history = ""
+        for msg in st.session_state.messages[-4:]:  # last 2 turns
+            role = "User" if msg["role"] == "user" else "Chatty"
+            history += f"{role}: {msg['content']}\n"
 
-    if st.button("Continue to Chat with Chatty"):
-        st.session_state.stage = "chat"
+        full_prompt = f"{chatty_prompt}\n\n{history}\nUser: {user_query}\n\nContext:\n{context}\n\nChatty:"
+        response = genai.GenerativeModel("gemini-1.5-pro-latest").generate_content(
+            full_prompt, generation_config=genai.types.GenerationConfig(temperature=0.3)
+        )
+        return response.text.strip()
 
-# --- Stage 4: AI Chat After Flow --- #
-elif st.session_state.stage == "chat":
-    st.subheader("Ask Chatty More About FBS Services!")
+    # ---- FLOWCHART SECTION ---- #
+    if st.session_state.stage == "start":
+        st.subheader("What is your financial priority?")
+        col1, col2, col3 = st.columns(3)
 
-    # Display chat history
-    for msg in st.session_state.messages:
-        with st.chat_message(msg["role"]):
-            st.markdown(msg["content"])
+        with col1:
+            if st.button("Investments"):
+                st.session_state.flow_data["priority"] = "Investments"
+                st.session_state.stage = "goal"
 
-    # Chat input for AI
-    if user_input := st.chat_input("Ask me about FBS investments, retirement, or planning..."):
-        st.chat_message("user").markdown(user_input)
-        st.session_state.messages.append({"role": "user", "content": user_input})
+        with col2:
+            if st.button("Retirement Solutions"):
+                st.session_state.flow_data["priority"] = "Retirement Solutions"
+                st.session_state.stage = "goal"
 
-        with st.spinner("Chatty is thinking..."):
-            # --- Placeholder AI Response (replace with real AI call if needed) --- #
-            ai_reply = f"Thanks for your question about '{user_input}'. Here's some information based on FBS offerings..."
-        
-        st.chat_message("assistant").markdown(ai_reply)
-        st.session_state.messages.append({"role": "assistant", "content": ai_reply})
+        with col3:
+            if st.button("Financial Planning"):
+                st.session_state.flow_data["priority"] = "Financial Planning"
+                st.session_state.stage = "goal"
+
+    elif st.session_state.stage == "goal":
+        priority = st.session_state.flow_data["priority"]
+        st.subheader(f"Your Priority: {priority}")
+        st.write("What's your next step?")
+
+        if priority == "Investments":
+            if st.button("Recurring Income"):
+                st.session_state.flow_data["goal"] = "Recurring Income"
+                st.session_state.stage = "details"
+            if st.button("Long-term Investment"):
+                st.session_state.flow_data["goal"] = "Long-term Investment"
+                st.session_state.stage = "details"
+            if st.button("Portfolio Management"):
+                st.session_state.flow_data["goal"] = "Portfolio Management"
+                st.session_state.stage = "details"
+
+        elif priority == "Retirement Solutions":
+            if st.button("Self-employed (1099)"):
+                st.session_state.flow_data["goal"] = "Self-employed (1099)"
+                st.session_state.stage = "details"
+            if st.button("W2"):
+                st.session_state.flow_data["goal"] = "W2"
+                st.session_state.stage = "details"
+            if st.button("Business owner"):
+                st.session_state.flow_data["goal"] = "Business owner"
+                st.session_state.stage = "details"
+
+        elif priority == "Financial Planning":
+            if st.button("One-Time Comprehensive Plan"):
+                st.session_state.flow_data["goal"] = "One-Time Comprehensive Plan"
+                st.session_state.stage = "details"
+            if st.button("Annual Planning & Tracking"):
+                st.session_state.flow_data["goal"] = "Annual Planning & Tracking"
+                st.session_state.stage = "details"
+            if st.button("Estate Planning"):
+                st.session_state.flow_data["goal"] = "Estate Planning"
+                st.session_state.stage = "details"
+
+    elif st.session_state.stage == "details":
+        priority = st.session_state.flow_data["priority"]
+        goal = st.session_state.flow_data["goal"]
+        st.subheader(f"{priority} → {goal}")
+
+        # Display flow details
+        if priority == "Investments":
+            if goal == "Recurring Income":
+                st.info("Our investment solutions:\n• Private Credit\n• Structured Note\n• Unsure – Check with Ruchitha.")
+            elif goal == "Long-term Investment":
+                st.info("Our services:\n• Private Funds\n• Model Portfolio")
+            elif goal == "Portfolio Management":
+                st.info("Diversified portfolios\nGRO model strategy\nClear performance insights.")
+
+        elif priority == "Retirement Solutions":
+            if goal == "Self-employed (1099)":
+                st.info("Solo 401(k):\n• Increase Contributions\n• Reduce Taxes\n• Unsure – Let's discuss.")
+            elif goal == "W2":
+                st.info("• Changing employer? → Talk to an expert.\n• 401(k) transfer? → Talk to an expert.\n• 401(k) reduced? → Strategic Roth Conversions.")
+            elif goal == "Business owner":
+                st.info("Solo 401(k) or plans to attract talent:\n• Traditional 401(k)\n• CBP\n• Pension options.")
+
+        elif priority == "Financial Planning":
+            if goal == "One-Time Comprehensive Plan":
+                st.info("Includes:\n• Retirement projections\n• Investment reviews\n• Flat Fee: $5,000")
+            elif goal == "Annual Planning & Tracking":
+                st.info("Ongoing advice.\nFee: $1,000 annually\nExclusive after One-Time Plan.")
+            elif goal == "Estate Planning":
+                st.info("Package includes:\n• Living Trust\n• Will\n• Power of Attorney\n• Fee: $2,500")
+
+        if st.button("Continue to Chat with Chatty"):
+            st.session_state.stage = "chat"
+
+    # ---- AI CHAT SECTION ---- #
+    elif st.session_state.stage == "chat":
+        st.subheader("Ask Chatty More About FBS Services!")
+
+        for msg in st.session_state.messages:
+            with st.chat_message(msg["role"]):
+                st.markdown(msg["content"])
+
+        if user_input := st.chat_input("Ask me about FBS investments, retirement, or planning..."):
+            st.chat_message("user").markdown(user_input)
+            st.session_state.messages.append({"role": "user", "content": user_input})
+
+            with st.spinner("Chatty is thinking..."):
+                response_text = chatty_response(user_input)
+
+            st.chat_message("assistant").markdown(response_text)
+            st.session_state.messages.append({"role": "assistant", "content": response_text})
+
+else:
+    st.warning("Please enter your Google API key in the sidebar to continue.")
