@@ -47,7 +47,15 @@ elif st.session_state.stage == "recurring_income":
     st.title("Recurring Income")
     st.subheader("Choose an option:")
     if st.button("Private Credit"):
-        st.info("Private Credit:\nTargeted yields of 8% to 20%.\nDirect security interests in real estate.\nFlexible terms.\nMarket independence.")
+    st.info("""
+**Private Credit**  
+• Targeted yields of 8% to 20%.  
+• Direct security interests in real estate or operating assets.  
+• Flexible terms with investor-aligned structuring.  
+• Market independence, offering returns decoupled from public equity volatility.  
+
+[Get Priority Access to Deals](https://chat.whatsapp.com/Gv9eQPwKxXa8LYr0ifenYh)
+""")
     if st.button("Structured Note"):
         go_to_stage("structured_note")
     if st.button("Continue to Chat"):
