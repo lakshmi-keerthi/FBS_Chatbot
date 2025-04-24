@@ -41,13 +41,21 @@ if GOOGLE_API_KEY:
         return [chunks[i] for i in I[0]]
 
     def chatty_response(user_query):
-        context = "\n".join(retrieve_chunks(user_query))
-        full_prompt = f"{chatty_prompt}\n\nContext:\n{context}\n\nUser: {user_query}\nChatty:"
+    context = "\n".join(retrieve_chunks(user_query))
+
+    # Reconstruct previous messages for history
+    history = ""
+    for msg in st.session_state.messages:
+        role = "User" if msg["role"] == "user" else "Chatty"
+        history += f"{role}: {msg['content']}\n"
+
+    # Build full prompt with history
+    full_prompt = f"{chatty_prompt}\n\n{history}\nUser: {user_query}\n\nContext:\n{context}\n\nChatty:"
     
-        response = genai.GenerativeModel("gemini-1.5-pro-latest").generate_content(
-            full_prompt, generation_config=genai.types.GenerationConfig(
+    response = genai.GenerativeModel("gemini-1.5-pro-latest").generate_content(
+        full_prompt, generation_config=genai.types.GenerationConfig(
             temperature=0.3))
-        return response.text.strip()
+    return response.text.strip()
 
 
     # 🎨 Chat UI Header
