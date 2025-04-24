@@ -6,12 +6,19 @@ if "stage" not in st.session_state:
     st.session_state.flow_data = {}
     st.session_state.messages = []
 
+# ---- Rerun Function (Compatible) ---- #
+def safe_rerun():
+    try:
+        st.experimental_rerun()
+    except AttributeError:
+        st.rerun()
+
 # ---- Helper to Move Between Stages ---- #
 def go_to_stage(stage_name, key=None, value=None):
     if key and value:
         st.session_state.flow_data[key] = value
     st.session_state.stage = stage_name
-    st.experimental_rerun()  # Immediate rerun with new state
+    safe_rerun()  # Force rerun NOW with updated state
 
 # ---- Stage 1: Financial Priority ---- #
 if st.session_state.stage == "start":
