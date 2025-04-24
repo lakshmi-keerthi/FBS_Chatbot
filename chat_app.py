@@ -61,16 +61,27 @@ elif st.session_state.stage == "recurring_income":
     if st.button("Continue to Chat"):
         go_to_stage("chat")
 
-# ---- Structured Note Sub-Options ---- #
+# ---- Structured Note Section ---- #
 elif st.session_state.stage == "structured_note":
     st.title("Structured Note")
+    st.subheader("Details:")
+
+    st.info("""
+**Structured Notes**  
+Structured Notes combine traditional bonds with derivatives to create customized investments aligned with specific risk and return goals. They can be linked to stocks, ETFs, or indices for tailored market exposure.
+
+**Trusted Sourcing:** We work with top global institutions like JP Morgan, Morgan Stanley, Goldman Sachs, and Barclays.
+
+**End-to-End Execution:** From auctioning to account setup, we manage the entire process for a seamless experience.
+
+**Diversification:** Offers an alternative asset class with laddered income strategies diversified across issuers and timeframes—helping reduce overall portfolio risk.
+""")
+
     st.subheader("What would you like to do?")
     if st.button("Explore Upcoming Notes"):
         st.info("Please explore upcoming notes through your advisor.")
     if st.button("I have questions"):
         st.info("Feel free to ask Chatty more about Structured Notes in chat.")
-    if st.button("Unsure"):
-        st.info("Structured Notes combine traditional bonds with derivatives.\nSourced from JP Morgan, Goldman Sachs, etc.\nDiversification benefits.")
     if st.button("Back to Recurring Income"):
         go_to_stage("recurring_income")
 
@@ -83,9 +94,25 @@ elif st.session_state.stage == "details":
     if priority == "Investments" and goal == "Long-term Investment":
         st.subheader("Our Investment Services:")
         if st.button("Private Funds"):
-            st.info("Private investment opportunities for diversification and superior returns.")
+            st.info("""
+**Private Funds**  
+At FBS Securities, we provide access to carefully selected private investment opportunities aimed at enhancing diversification, targeting superior returns, and addressing the sophisticated needs of qualified investors. Each offering is backed by thorough due diligence, strategic structuring, and active oversight—with full transparency and fiduciary care.
+
+**Key Benefits:**  
+• Tax Efficiency & Credits  
+• Diversification Beyond Public Markets  
+• Enhanced Return Potential  
+• Limited Market Correlation
+""")
         if st.button("Model Portfolio"):
-            st.info("Curated diversified portfolios using our proprietary GRO model.")
+            st.info("""
+**Model Portfolio**  
+Our Investment Portfolio Management includes - Asset Allocation with Diversified Portfolios.
+
+• Carefully curated allocations in large-cap holdings, dividend-yielding stocks, fixed-income securities, and sector-specific investments.  
+• Our proprietary “GRO” model strategically combines income-generating assets, growth opportunities, and defensive sectors.  
+• Crystal-clear insights, offering easy-to-understand insights into your portfolio’s performance. This empowers you to make confident, data-driven financial decisions.
+""")
         if st.button("Continue to Chat"):
             go_to_stage("chat")
 
@@ -113,13 +140,30 @@ elif st.session_state.stage == "self_employed":
     if st.button("Yes"):
         st.subheader("Are you looking to:")
         if st.button("Increase Contributions"):
-            st.info("Cash Balance Plans can help increase contributions significantly.")
+            st.info("""
+**CBP: Premier Retirement Solution**  
+**Cash Balance Plan**  
+Want to contribute significantly more to your retirement while lowering your tax burden? Cash Balance Plans offer a powerful solution for high-income business owners, doctors, and law firms looking to build wealth efficiently.
+
+At FBS Group, we specialize in designing and implementing Cash Balance Plans that maximize tax savings and retirement growth while keeping your business financially strong.
+""")
         if st.button("Reduce Taxes"):
-            st.info("CBPs and Solo 401(k) allow for major tax advantages.")
+            st.info("""
+**CBP: Premier Retirement Solution**  
+**Cash Balance Plan**  
+Want to contribute significantly more to your retirement while lowering your tax burden? Cash Balance Plans offer a powerful solution for high-income business owners, doctors, and law firms looking to build wealth efficiently.
+
+At FBS Group, we specialize in designing and implementing Cash Balance Plans that maximize tax savings and retirement growth while keeping your business financially strong.
+""")
         if st.button("Unsure"):
             st.info("Let's explore what works best in Chatty chat.")
     if st.button("No"):
-        st.info("Solo 401(k) offers tax-deferred growth for self-employed individuals.")
+        st.info("""
+**Solo 401(k): A Smart Choice for You**  
+A one-participant 401(k), or a solo K, offers self-employed individuals an efficient way to save for retirement. There are no age or income restrictions, but participants must be business owners with no employees (apart from spouses).
+
+A solo 401(k) gives you all the benefits of employer-sponsored 401(k) plans – tax breaks on savings, tax-deferred or tax-free growth, and generous annual contributions – but tailored for small businesses. You can set up the plan at a broker of your choice without restrictive investment rules.
+""")
     if st.button("Continue to Chat"):
         go_to_stage("chat")
 
@@ -132,7 +176,10 @@ elif st.session_state.stage == "w2":
     if st.button("401(k) transfer"):
         st.info("Please talk to an expert at FBS.")
     if st.button("401(k) reduced in value"):
-        st.info("Consider Strategic Roth Conversions for tax-free growth.")
+        st.info("""
+**Strategic Roth Conversions:**  
+Are you looking for tax-free distribution and to maximize your retirement wealth? At FBS Group, we specialize in advanced retirement strategies like the Mega Backdoor Roth and Backdoor Roth, helping high-income earners optimize their tax-free retirement savings. Our expertise ensures you get the most out of your retirement contributions while staying fully compliant with IRS rules.
+""")
     if st.button("None of the above"):
         st.info("Please talk to an expert at FBS.")
     if st.button("Continue to Chat"):
@@ -149,7 +196,13 @@ elif st.session_state.stage == "business_owner":
         if st.button("Traditional 401(k)"):
             st.info("Traditional 401(k)s offer flexibility and tax benefits for employers and employees.")
         if st.button("CBP"):
-            st.info("Cash Balance Plans allow high contributions and tax savings.")
+            st.info("""
+**CBP: Premier Retirement Solution**  
+**Cash Balance Plan**  
+Want to contribute significantly more to your retirement while lowering your tax burden? Cash Balance Plans offer a powerful solution for high-income business owners, doctors, and law firms looking to build wealth efficiently.
+
+At FBS Group, we specialize in designing and implementing Cash Balance Plans that maximize tax savings and retirement growth while keeping your business financially strong.
+""")
         if st.button("Pension"):
             st.info("Defined benefit pensions provide fixed retirement payouts.")
         if st.button("Continue to Chat"):
@@ -160,13 +213,48 @@ elif st.session_state.stage == "financial_plan_type":
     st.title("Financial Planning")
     st.subheader("Are you looking for:")
     if st.button("One-Time Comprehensive Plan"):
-        st.info("Includes:\n• Retirement projections\n• Tax optimization\n• Fee: $5,000")
+        st.info("""
+**One-Time Comprehensive Financial Plan**  
+Your full financial picture—mapped out with expert insight.
+
+**This includes:**  
+• Retirement projections  
+• Investment portfolio reviews  
+• Tax optimization strategies  
+• Estate planning considerations  
+
+**Flat Fee:** $5,000  
+✅ Designed to give you clarity and confidence for the years ahead.
+""")
         go_to_stage("chat")
     if st.button("Annual Planning & Tracking"):
-        st.info("Ongoing support after comprehensive plan.\nFee: $1,000 annually")
+        st.info("""
+**Annual Planning & Tracking**  
+This is an **Ongoing Support Plan**:  
+Available exclusively to clients who have completed the One-Time Comprehensive Plan.
+
+• Progress check-ins  
+• Ongoing personalized advice  
+• Plan updates as your life and finances evolve  
+
+**Fee:** $1,000 annually, starting in year two  
+✅ Continue your journey with expert guidance.
+""")
         go_to_stage("chat")
     if st.button("Estate Planning"):
-        st.info("Includes:\n• Living Trust\n• Will\n• Fee: $2,500")
+        st.info("""
+**One-Time Estate Planning Package**  
+Protect your legacy and ensure your wishes are honored.
+
+**This all-inclusive package provides:**  
+• Revocable Living Trust  
+• Last Will and Testament  
+• Healthcare Directive  
+• Durable Power of Attorney  
+
+**One-Time Fee:** $2,500  
+✅ Comprehensive legal documents tailored to your needs.
+""")
         go_to_stage("chat")
 
 # ---- Chat Stage ---- #
