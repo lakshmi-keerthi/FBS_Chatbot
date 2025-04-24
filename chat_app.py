@@ -261,17 +261,3 @@ Protect your legacy and ensure your wishes are honored.
 elif st.session_state.stage == "chat":
     st.title("💬 Chatty – AI Financial Assistant")
     st.subheader("Ask me more about FBS services...")
-
-    for msg in st.session_state.messages:
-        with st.chat_message(msg["role"]):
-            st.markdown(msg["content"])
-
-    if user_input := st.chat_input("Ask your financial question..."):
-        st.chat_message("user").markdown(user_input)
-        st.session_state.messages.append({"role": "user", "content": user_input})
-
-        with st.spinner("Chatty is thinking..."):
-            response_text = f"Thanks for your question about '{user_input}'. Here's more about FBS services..."
-
-        st.chat_message("assistant").markdown(response_text)
-        st.session_state.messages.append({"role": "assistant", "content": response_text})
