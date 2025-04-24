@@ -7,16 +7,17 @@ if "stage" not in st.session_state:
     st.session_state.messages = []
 
 # ---- Helper to Move Between Stages ---- #
-def go_to_stage(stage_name, key, value=None):
-    if value:
+def go_to_stage(stage_name, key=None, value=None):
+    if key and value:
         st.session_state.flow_data[key] = value
     st.session_state.stage = stage_name
+    st.experimental_rerun()  # Immediate rerun with new state
 
 # ---- Stage 1: Financial Priority ---- #
 if st.session_state.stage == "start":
     st.title("💬 Chatty – FBS Financial Assistant")
     st.subheader("What is your financial priority?")
-    
+
     if st.button("Investments"):
         go_to_stage("goal", "priority", "Investments")
     if st.button("Retirement Solutions"):
@@ -88,7 +89,7 @@ elif st.session_state.stage == "details":
 
     # ---- Proceed to Chat ---- #
     if st.button("Continue to Chat with Chatty"):
-        st.session_state.stage = "chat"
+        go_to_stage("chat")
 
 # ---- Stage 4: Chatty AI Chat ---- #
 elif st.session_state.stage == "chat":
