@@ -45,7 +45,7 @@ elif st.session_state.stage == "investments_goal":
 # ---- Recurring Income Options ---- #
 elif st.session_state.stage == "recurring_income":
     st.title("Recurring Income")
-    st.subheader("Our investment solutions:")
+    st.subheader("Choose an option:")
     if st.button("Private Credit"):
         st.info("Private Credit:\nTargeted yields of 8% to 20%.\nDirect security interests in real estate.\nFlexible terms.\nMarket independence.")
     if st.button("Structured Note"):
@@ -62,31 +62,39 @@ elif st.session_state.stage == "structured_note":
     if st.button("I have questions"):
         st.info("Feel free to ask Chatty more about Structured Notes in chat.")
     if st.button("Unsure"):
-        st.info("Need to update this")
+        st.info("Structured Notes combine traditional bonds with derivatives.\nSourced from JP Morgan, Goldman Sachs, etc.\nDiversification benefits.")
     if st.button("Back to Recurring Income"):
         go_to_stage("recurring_income")
 
-# ---- Long-term Investment Info ---- #
+# ---- Long-term Investment & Details ---- #
 elif st.session_state.stage == "details":
     priority = st.session_state.flow_data["priority"]
     goal = st.session_state.flow_data["goal"]
     st.title(f"{priority} → {goal}")
-    st.subheader("Details:")
 
-    if priority == "Investments":
-        if goal == "Long-term Investment":
-            st.info("Our services:\n• Private Funds\n• Model Portfolio")
-        elif goal == "Portfolio Management":
-            st.info("Diversified portfolios\nGRO model strategy\nClear performance insights.")
+    if priority == "Investments" and goal == "Long-term Investment":
+        st.subheader("Our Investment Services:")
+        if st.button("Private Funds"):
+            st.info("Private investment opportunities for diversification and superior returns.")
+        if st.button("Model Portfolio"):
+            st.info("Curated diversified portfolios using our proprietary GRO model.")
+        if st.button("Continue to Chat"):
+            go_to_stage("chat")
 
-    if priority == "Retirement Solutions":
-        if goal == "W2":
-            st.info("• Changing employer? → Talk to an expert.\n• 401(k) transfer? → Talk to an expert.\n• 401(k) reduced? → Strategic Roth Conversions.")
-        elif goal == "Business owner":
-            st.info("Solo 401(k) or plans to attract talent:\n• Traditional 401(k)\n• CBP\n• Pension options.")
+    elif priority == "Investments" and goal == "Portfolio Management":
+        st.info("Diversified portfolios\nGRO model strategy\nClear performance insights.")
+        if st.button("Continue to Chat"):
+            go_to_stage("chat")
 
-    if st.button("Continue to Chat"):
-        go_to_stage("chat")
+    elif priority == "Retirement Solutions" and goal == "W2":
+        st.info("• Changing employer? → Talk to an expert.\n• 401(k) transfer? → Talk to an expert.\n• 401(k) reduced? → Strategic Roth Conversions.")
+        if st.button("Continue to Chat"):
+            go_to_stage("chat")
+
+    elif priority == "Retirement Solutions" and goal == "Business owner":
+        st.info("Solo 401(k) or plans to attract talent:\n• Traditional 401(k)\n• CBP\n• Pension options.")
+        if st.button("Continue to Chat"):
+            go_to_stage("chat")
 
 # ---- Retirement Status ---- #
 elif st.session_state.stage == "retirement_status":
@@ -167,17 +175,3 @@ elif st.session_state.stage == "financial_plan_type":
 elif st.session_state.stage == "chat":
     st.title("💬 Chatty – AI Financial Assistant")
     st.subheader("Ask me more about FBS services...")
-
-    for msg in st.session_state.messages:
-        with st.chat_message(msg["role"]):
-            st.markdown(msg["content"])
-
-    if user_input := st.chat_input("Ask your financial question..."):
-        st.chat_message("user").markdown(user_input)
-        st.session_state.messages.append({"role": "user", "content": user_input})
-
-        with st.spinner("Chatty is thinking..."):
-            response_text = f"Thanks for your question about '{user_input}'. Here's more about FBS services..."
-
-        st.chat_message("assistant").markdown(response_text)
-        st.session_state.messages.append({"role": "assistant", "content": response_text})
