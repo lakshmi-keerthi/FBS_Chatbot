@@ -45,7 +45,7 @@ elif st.session_state.stage == "investments_goal":
 # ---- Recurring Income Options ---- #
 elif st.session_state.stage == "recurring_income":
     st.title("Recurring Income")
-    st.subheader("Choose an option:")
+    st.subheader("Our investment solutions:")
     if st.button("Private Credit"):
         st.info("Private Credit:\nTargeted yields of 8% to 20%.\nDirect security interests in real estate.\nFlexible terms.\nMarket independence.")
     if st.button("Structured Note"):
@@ -62,7 +62,7 @@ elif st.session_state.stage == "structured_note":
     if st.button("I have questions"):
         st.info("Feel free to ask Chatty more about Structured Notes in chat.")
     if st.button("Unsure"):
-        st.info("Structured Notes combine traditional bonds with derivatives.\nSourced from JP Morgan, Goldman Sachs, etc.\nDiversification benefits.")
+        st.info("Need to update this")
     if st.button("Back to Recurring Income"):
         go_to_stage("recurring_income")
 
