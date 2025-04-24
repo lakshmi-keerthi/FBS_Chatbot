@@ -6,12 +6,18 @@ if "stage" not in st.session_state:
     st.session_state.flow_data = {}
     st.session_state.messages = []
 
+def safe_rerun():
+    try:
+        st.experimental_rerun()
+    except AttributeError:
+        st.rerun()
+
 # ---- Helper to Move Between Stages ---- #
 def go_to_stage(stage_name, key=None, value=None):
     if key and value:
         st.session_state.flow_data[key] = value
     st.session_state.stage = stage_name
-    st.experimental_rerun()
+    safe_rerun()
 
 # ---- Stage 1: Financial Priority ---- #
 if st.session_state.stage == "start":
@@ -25,116 +31,109 @@ if st.session_state.stage == "start":
     if st.button("Financial Planning"):
         go_to_stage("financial_plan_type", "priority", "Financial Planning")
 
-# ---- Stage 2: Investments Goals ---- #
+# ---- Investments Goal ---- #
 elif st.session_state.stage == "investments_goal":
     st.title("Investments")
-    st.subheader("What’s your primary goal?")
+    st.subheader("What's your primary goal?")
 
     if st.button("Recurring Income"):
         go_to_stage("recurring_income", "goal", "Recurring Income")
     if st.button("Long-term Investment"):
-        go_to_stage("long_term", "goal", "Long-term Investment")
+        go_to_stage("details", "goal", "Long-term Investment")
     if st.button("Portfolio Management"):
-        go_to_stage("portfolio_mgmt", "goal", "Portfolio Management")
+        go_to_stage("details", "goal", "Portfolio Management")
 
 # ---- Recurring Income Options ---- #
 elif st.session_state.stage == "recurring_income":
     st.title("Recurring Income")
-    st.info("Our investment solutions:\n• Private Credit\n• Structured Note\n• Unsure – We'll help you decide.")
+    st.info("Our investment solutions:\n• Private Credit\n• Structured Note")
+    if st.button("Private Credit Details"):
+        st.info("Private Credit:\nTargeted yields of 8% to 20%.\nDirect security interests in real estate.\nFlexible terms.\nMarket independence.")
+    if st.button("Structured Note Options"):
+        go_to_stage("structured_note")
+
     if st.button("Continue to Chat"):
         go_to_stage("chat")
 
-# ---- Long-term Investment Options ---- #
-elif st.session_state.stage == "long_term":
-    st.title("Long-term Investment")
-    st.info("Our services:\n• Private Funds\n• Model Portfolio")
-    if st.button("Continue to Chat"):
-        go_to_stage("chat")
+# ---- Structured Note Sub-Options ---- #
+elif st.session_state.stage == "structured_note":
+    st.title("Structured Note")
+    st.subheader("What would you like to do?")
+    if st.button("Explore Upcoming Notes"):
+        st.info("Please explore upcoming notes through your advisor.")
+    if st.button("I have questions"):
+        st.info("Feel free to ask Chatty more about Structured Notes in chat.")
+    if st.button("Unsure"):
+        st.info("Structured Notes combine traditional bonds with derivatives.\nSourced from JP Morgan, Goldman Sachs, etc.\nDiversification benefits.")
+    if st.button("Back to Recurring Income"):
+        go_to_stage("recurring_income")
 
-# ---- Portfolio Management Info ---- #
-elif st.session_state.stage == "portfolio_mgmt":
-    st.title("Portfolio Management")
-    st.info("Diversified portfolios\nGRO model strategy\nClear performance insights.")
-    if st.button("Continue to Chat"):
-        go_to_stage("chat")
-
-# ---- Stage 3: Retirement Solutions ---- #
+# ---- Retirement Status ---- #
 elif st.session_state.stage == "retirement_status":
     st.title("Retirement Solutions")
     st.subheader("What is your employment status?")
 
     if st.button("Self-employed (1099)"):
-        go_to_stage("self_employed", "status", "Self-employed")
+        go_to_stage("self_employed", "goal", "Self-employed (1099)")
     if st.button("W2"):
-        go_to_stage("w2", "status", "W2")
+        go_to_stage("w2", "goal", "W2")
     if st.button("Business owner"):
-        go_to_stage("business_owner", "status", "Business owner")
+        go_to_stage("business_owner", "goal", "Business owner")
 
-# ---- Self-Employed Options ---- #
+# ---- Self-employed Flow ---- #
 elif st.session_state.stage == "self_employed":
     st.title("Self-employed (1099)")
     st.subheader("Do you have a solo 401(k)?")
     if st.button("Yes"):
         st.info("Are you looking to:\n• Increase Contributions\n• Reduce Taxes\n• Unsure")
-        if st.button("Continue to Chat"):
-            go_to_stage("chat")
     if st.button("No"):
-        st.info("Solo 401(k) can be a great choice for self-employed individuals.")
-        if st.button("Continue to Chat"):
-            go_to_stage("chat")
+        st.info("Solo 401(k) offers tax-deferred growth for self-employed individuals.")
 
-# ---- W2 Employee Options ---- #
+    if st.button("Continue to Chat"):
+        go_to_stage("chat")
+
+# ---- W2 Flow ---- #
 elif st.session_state.stage == "w2":
     st.title("W2 Employee")
     st.subheader("What are you looking for?")
     if st.button("Changing employer"):
         st.info("Please talk to an expert at FBS.")
-        go_to_stage("chat")
     if st.button("401(k) transfer"):
         st.info("Please talk to an expert at FBS.")
-        go_to_stage("chat")
     if st.button("401(k) reduced in value"):
-        st.info("Consider Strategic Roth Conversions. Let's explore options.")
-        if st.button("Continue to Chat"):
-            go_to_stage("chat")
+        st.info("Consider Strategic Roth Conversions for tax-free growth.")
     if st.button("None of the above"):
         st.info("Please talk to an expert at FBS.")
+
+    if st.button("Continue to Chat"):
         go_to_stage("chat")
 
-# ---- Business Owner Options ---- #
+# ---- Business Owner Flow ---- #
 elif st.session_state.stage == "business_owner":
     st.title("Business Owner")
-    st.subheader("Number of employees?")
+    st.subheader("How many employees?")
     if st.button("1 Employee"):
-        st.subheader("Do you have a solo 401(k)?")
-        if st.button("Yes"):
-            st.info("Looking to:\n• Increase Contributions\n• Reduce Taxes\n• Unsure")
-            if st.button("Continue to Chat"):
-                go_to_stage("chat")
-        if st.button("No"):
-            st.info("Solo 401(k) can be an excellent choice for your business.")
-            if st.button("Continue to Chat"):
-                go_to_stage("chat")
+        go_to_stage("self_employed")
     if st.button("More than 1 Employee"):
-        st.info("Are you looking to attract and retain talent using:\n• Traditional 401(k)\n• CBP\n• Pension")
+        st.info("Are you looking to attract and retain talent using:\n• Traditional 401(k)\n• CBP\n• Pension options.")
         if st.button("Continue to Chat"):
             go_to_stage("chat")
 
-# ---- Stage 4: Financial Planning ---- #
+# ---- Financial Planning ---- #
 elif st.session_state.stage == "financial_plan_type":
     st.title("Financial Planning")
     st.subheader("Are you looking for:")
     if st.button("One-Time Comprehensive Plan"):
-        st.info("Includes:\n• Retirement projections\n• Investment reviews\n• Fee: $5,000")
+        st.info("Includes:\n• Retirement projections\n• Tax optimization\n• Fee: $5,000")
         go_to_stage("chat")
     if st.button("Annual Planning & Tracking"):
-        st.info("Ongoing advice.\nFee: $1,000 annually\nExclusive after One-Time Plan.")
+        st.info("Ongoing support after comprehensive plan.\nFee: $1,000 annually")
         go_to_stage("chat")
     if st.button("Estate Planning"):
-        st.info("Includes:\n• Living Trust\n• Will\n• Power of Attorney\n• Fee: $2,500")
+        st.info("Includes:\n• Living Trust\n• Will\n• Fee: $2,500")
         go_to_stage("chat")
 
-# ---- Final Stage: AI Chat ---- #
+# ---- Chat Stage ---- #
 elif st.session_state.stage == "chat":
     st.title("💬 Chatty – AI Financial Assistant")
     st.subheader("Ask me more about FBS services...")
@@ -143,7 +142,6 @@ elif st.session_state.stage == "chat":
         with st.chat_message(msg["role"]):
             st.markdown(msg["content"])
 
-    # Placeholder for AI response – to be added later
     if user_input := st.chat_input("Ask your financial question..."):
         st.chat_message("user").markdown(user_input)
         st.session_state.messages.append({"role": "user", "content": user_input})
