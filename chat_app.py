@@ -226,7 +226,6 @@ Your full financial picture—mapped out with expert insight.
 **Flat Fee:** $5,000  
 ✅ Designed to give you clarity and confidence for the years ahead.
 """)
-        go_to_stage("chat")
     if st.button("Annual Planning & Tracking"):
         st.info("""
 **Annual Planning & Tracking**  
@@ -240,7 +239,6 @@ Available exclusively to clients who have completed the One-Time Comprehensive P
 **Fee:** $1,000 annually, starting in year two  
 ✅ Continue your journey with expert guidance.
 """)
-        go_to_stage("chat")
     if st.button("Estate Planning"):
         st.info("""
 **One-Time Estate Planning Package**  
@@ -255,8 +253,6 @@ Protect your legacy and ensure your wishes are honored.
 **One-Time Fee:** $2,500  
 ✅ Comprehensive legal documents tailored to your needs.
 """)
-        go_to_stage("chat")
-
 # ---- Chat Stage ---- #
 elif st.session_state.stage == "chat":
     st.title("💬 Chatty – AI Financial Assistant")
