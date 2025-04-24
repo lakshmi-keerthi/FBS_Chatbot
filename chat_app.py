@@ -2,7 +2,6 @@ import streamlit as st
 import google.generativeai as genai
 import faiss
 import numpy as np
-import os
 
 # ---- Page Config ---- #
 st.set_page_config(page_title="Chatty – FBS Financial Assistant", layout="centered")
@@ -13,6 +12,7 @@ if "stage" not in st.session_state:
     st.session_state.stage = "start"
     st.session_state.flow_data = {}
     st.session_state.messages = []
+    st.session_state.clicked = False  # Fix for button click
 
 # ---- Sidebar for API Key ---- #
 st.sidebar.title("🔐 API Configuration")
@@ -49,9 +49,8 @@ if GOOGLE_API_KEY:
 
     def chatty_response(user_query):
         context = "\n".join(retrieve_chunks(user_query))
-        # Include history in prompt
         history = ""
-        for msg in st.session_state.messages[-4:]:  # last 2 turns
+        for msg in st.session_state.messages[-4:]:
             role = "User" if msg["role"] == "user" else "Chatty"
             history += f"{role}: {msg['content']}\n"
 
@@ -67,21 +66,28 @@ if GOOGLE_API_KEY:
         col1, col2, col3 = st.columns(3)
 
         with col1:
-            if st.button("Investments"):
+            if st.button("Investments") and not st.session_state.clicked:
                 st.session_state.flow_data["priority"] = "Investments"
                 st.session_state.stage = "goal"
+                st.session_state.clicked = True
+                st.experimental_rerun()
 
         with col2:
-            if st.button("Retirement Solutions"):
+            if st.button("Retirement Solutions") and not st.session_state.clicked:
                 st.session_state.flow_data["priority"] = "Retirement Solutions"
                 st.session_state.stage = "goal"
+                st.session_state.clicked = True
+                st.experimental_rerun()
 
         with col3:
-            if st.button("Financial Planning"):
+            if st.button("Financial Planning") and not st.session_state.clicked:
                 st.session_state.flow_data["priority"] = "Financial Planning"
                 st.session_state.stage = "goal"
+                st.session_state.clicked = True
+                st.experimental_rerun()
 
     elif st.session_state.stage == "goal":
+        st.session_state.clicked = False  # Reset for new stage
         priority = st.session_state.flow_data["priority"]
         st.subheader(f"Your Priority: {priority}")
         st.write("What's your next step?")
@@ -90,41 +96,50 @@ if GOOGLE_API_KEY:
             if st.button("Recurring Income"):
                 st.session_state.flow_data["goal"] = "Recurring Income"
                 st.session_state.stage = "details"
+                st.experimental_rerun()
             if st.button("Long-term Investment"):
                 st.session_state.flow_data["goal"] = "Long-term Investment"
                 st.session_state.stage = "details"
+                st.experimental_rerun()
             if st.button("Portfolio Management"):
                 st.session_state.flow_data["goal"] = "Portfolio Management"
                 st.session_state.stage = "details"
+                st.experimental_rerun()
 
         elif priority == "Retirement Solutions":
             if st.button("Self-employed (1099)"):
                 st.session_state.flow_data["goal"] = "Self-employed (1099)"
                 st.session_state.stage = "details"
+                st.experimental_rerun()
             if st.button("W2"):
                 st.session_state.flow_data["goal"] = "W2"
                 st.session_state.stage = "details"
+                st.experimental_rerun()
             if st.button("Business owner"):
                 st.session_state.flow_data["goal"] = "Business owner"
                 st.session_state.stage = "details"
+                st.experimental_rerun()
 
         elif priority == "Financial Planning":
             if st.button("One-Time Comprehensive Plan"):
                 st.session_state.flow_data["goal"] = "One-Time Comprehensive Plan"
                 st.session_state.stage = "details"
+                st.experimental_rerun()
             if st.button("Annual Planning & Tracking"):
                 st.session_state.flow_data["goal"] = "Annual Planning & Tracking"
                 st.session_state.stage = "details"
+                st.experimental_rerun()
             if st.button("Estate Planning"):
                 st.session_state.flow_data["goal"] = "Estate Planning"
                 st.session_state.stage = "details"
+                st.experimental_rerun()
 
     elif st.session_state.stage == "details":
+        st.session_state.clicked = False
         priority = st.session_state.flow_data["priority"]
         goal = st.session_state.flow_data["goal"]
         st.subheader(f"{priority} → {goal}")
 
-        # Display flow details
         if priority == "Investments":
             if goal == "Recurring Income":
                 st.info("Our investment solutions:\n• Private Credit\n• Structured Note\n• Unsure – Check with Ruchitha.")
@@ -151,8 +166,8 @@ if GOOGLE_API_KEY:
 
         if st.button("Continue to Chat with Chatty"):
             st.session_state.stage = "chat"
+            st.experimental_rerun()
 
-    # ---- AI CHAT SECTION ---- #
     elif st.session_state.stage == "chat":
         st.subheader("Ask Chatty More About FBS Services!")
 
