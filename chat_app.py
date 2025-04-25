@@ -8,7 +8,7 @@ if "stage" not in st.session_state:
 
 def safe_rerun():
     try:
-        st.experimental_rerun()
+        st.st.rerun()
     except AttributeError:
         st.rerun()
 
