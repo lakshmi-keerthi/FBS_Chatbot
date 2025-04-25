@@ -1,87 +1,84 @@
 import streamlit as st
 import google.generativeai as genai
-import faiss
-import numpy as np
-import os
+from langchain_google_genai import ChatGoogleGenerativeAI, GoogleGenerativeAIEmbeddings
+from langchain.vectorstores import FAISS
+from langchain.text_splitter import CharacterTextSplitter
+from langchain.chains import ConversationalRetrievalChain
+from langchain.memory import ConversationBufferMemory
+from langchain.prompts import PromptTemplate
 
-# Set Streamlit page config
-st.set_page_config(page_title="Chatty – FBS Financial Assistant", layout="centered")
+# --- Setup Streamlit ---
+st.set_page_config(page_title="💬 Chatty – LangChain-Powered FBS Assistant", layout="centered")
+st.title("💬 Chatty – FBS Financial Assistant")
+st.markdown("Ask me about FBS investments, retirement, or planning topics!")
 
-# Load Prompt and Content
-with open("FBS_Prompt_v2.md", "r", encoding="utf-8") as f:
-    chatty_prompt = f.read()
-
-with open("Webpage.md", "r", encoding="utf-8") as f:
-    fbs_content = f.read()
-
-# Sidebar for API Key Entry
+# --- Sidebar API ---
 st.sidebar.title("🔐 API Configuration")
 GOOGLE_API_KEY = st.sidebar.text_input("Enter your Google API Key:", type="password")
 
 if GOOGLE_API_KEY:
     genai.configure(api_key=GOOGLE_API_KEY)
 
-    # Split FBS content based on headings
-    chunks = fbs_content.split('####')
-    chunks = [f"#### {chunk.strip()}" for chunk in chunks if chunk.strip()]
+    # --- Load Prompt and FBS Content ---
+    with open("FBS_Prompt_v2.md", "r", encoding="utf-8") as f:
+        chatty_prompt = f.read()
 
-    @st.cache_resource
-    def embed_chunks(chunks):
-        embeddings = [genai.embed_content(model="models/text-embedding-004", content=chunk, task_type="retrieval_document")['embedding'] for chunk in chunks]
-        embeddings = np.array(embeddings)
-        index = faiss.IndexFlatL2(embeddings.shape[1])
-        index.add(embeddings)
-        return index, embeddings
+    with open("Webpage.md", "r", encoding="utf-8") as f:
+        fbs_content = f.read()
 
-    index, chunk_embeddings = embed_chunks(chunks)
+    # --- Split Content ---
+    text_splitter = CharacterTextSplitter(chunk_size=500, chunk_overlap=50)
+    docs = text_splitter.create_documents([fbs_content])
 
-    def retrieve_chunks(query, k=5):
-        query_embedding = np.array([genai.embed_content(model="models/text-embedding-004", content=query, task_type="retrieval_query")['embedding']])
-        D, I = index.search(query_embedding, k)
-        return [chunks[i] for i in I[0]]
+    # --- Embedding and Vector Store ---
+    embeddings = GoogleGenerativeAIEmbeddings(model="models/text-embedding-004")
+    vector_store = FAISS.from_documents(docs, embedding=embeddings)
 
-    def chatty_response(user_query):
-        context = "\n".join(retrieve_chunks(user_query))
+    # --- Memory for Chat History ---
+    memory = ConversationBufferMemory(memory_key="chat_history", return_messages=True)
 
-    # Reconstruct previous messages for history
-        history = ""
-        for msg in st.session_state.messages:
-            role = "User" if msg["role"] == "user" else "Chatty"
-            history += f"{role}: {msg['content']}\n"
+    # --- Prompt Template ---
+    prompt_template = PromptTemplate.from_template("""
+{chatty_prompt}
 
-    # Build full prompt with history
-        full_prompt = f"{chatty_prompt}\n\n{history}\nUser: {user_query}\n\nContext:\n{context}\n\nChatty:"
-    
-        response = genai.GenerativeModel("gemini-1.5-pro-latest").generate_content(
-            full_prompt, generation_config=genai.types.GenerationConfig(
-                temperature=0.3))
-        return response.text.strip()
+Context:
+{context}
 
+Chat History:
+{chat_history}
 
-    # 🎨 Chat UI Header
-    st.title("💬 Chatty – Your FBS Financial Assistant")
-    st.markdown("Get general financial advice based on FBS offerings. I'm Chatty, how can I assist you today?")
+User: {question}
+Chatty:
+""")
 
-    # Initialize chat session
+    # --- LLM Setup ---
+    llm = ChatGoogleGenerativeAI(model="gemini-1.5-pro-latest", temperature=0.3, google_api_key=GOOGLE_API_KEY)
+
+    # --- Conversational Retrieval Chain ---
+    qa_chain = ConversationalRetrievalChain.from_llm(
+        llm=llm,
+        retriever=vector_store.as_retriever(search_kwargs={"k": 5}),
+        memory=memory,
+        combine_docs_chain_kwargs={"prompt": prompt_template.partial(chatty_prompt=chatty_prompt)}
+    )
+
+    # --- Streamlit Chat UI ---
     if "messages" not in st.session_state:
         st.session_state.messages = []
 
-    # Display all chat messages
     for msg in st.session_state.messages:
         with st.chat_message(msg["role"]):
             st.markdown(msg["content"])
 
-    # Chat input
-    if user_input := st.chat_input("Ask me about FBS investments, retirement, or planning..."):
+    if user_input := st.chat_input("Ask me anything..."):
         st.chat_message("user").markdown(user_input)
         st.session_state.messages.append({"role": "user", "content": user_input})
 
         with st.spinner("Chatty is thinking..."):
-            response_text = chatty_response(user_input)
+            result = qa_chain({"question": user_input})
+            response_text = result["answer"]
 
-        with st.chat_message("assistant"):
-            st.markdown(response_text)
-
+        st.chat_message("assistant").markdown(response_text)
         st.session_state.messages.append({"role": "assistant", "content": response_text})
 
 else:
