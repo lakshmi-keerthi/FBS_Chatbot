@@ -20,7 +20,7 @@ def go_to_stage(stage_name, key=None, value=None):
 
 # ---- Stage 1: Financial Priority ---- #
 if st.session_state.stage == "start":
-    st.title("💬 Chatty – FBS Financial Assistant")
+    st.title("💬 Financial AI Assistant")
     st.subheader("What is your financial priority?")
 
     if st.button("Investments"):
@@ -81,7 +81,7 @@ Structured Notes combine traditional bonds with derivatives to create customized
     if st.button("Explore Upcoming Notes"):
         st.info("Please explore upcoming notes through your advisor.")
     if st.button("I have questions"):
-        st.info("Feel free to ask Chatty more about Structured Notes in chat.")
+        st.info("Feel free to ask Financial AI Assistant more about Structured Notes in chat.")
     if st.button("Back to Recurring Income"):
         go_to_stage("recurring_income")
 
@@ -156,7 +156,7 @@ Want to contribute significantly more to your retirement while lowering your tax
 At FBS Group, we specialize in designing and implementing Cash Balance Plans that maximize tax savings and retirement growth while keeping your business financially strong.
 """)
         if st.button("Unsure"):
-            st.info("Let's explore what works best in Chatty chat.")
+            st.info("Let's explore what works best in Financial AI Assistant chat.")
     if st.button("No"):
         st.info("""
 **Solo 401(k): A Smart Choice for You**  
@@ -255,5 +255,5 @@ Protect your legacy and ensure your wishes are honored.
 """)
 # ---- Chat Stage ---- #
 elif st.session_state.stage == "chat":
-    st.title("💬 Chatty – AI Financial Assistant")
+    st.title("💬 Financial AI Assistant")
     st.subheader("Ask me more about FBS services...")
