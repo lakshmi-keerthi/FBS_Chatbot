@@ -5,7 +5,7 @@ import numpy as np
 import os
 
 # ---- Page Config ---- #
-st.set_page_config(page_title="Chatty – FBS Financial Assistant", layout="centered")
+st.set_page_config(page_title="FBS Financial AI Assistant", layout="centered")
 
 # ---- Sidebar for API Key ---- #
 st.sidebar.title("🔐 API Configuration")
@@ -60,8 +60,8 @@ if GOOGLE_API_KEY:
         return response.text.strip()
 
     # ---- Chat UI ---- #
-    st.title("💬 Chatty – Your FBS Financial Assistant")
-    st.markdown("Get general financial advice based on FBS offerings. I'm Chatty, how can I assist you today?")
+    st.title("💬 FBS Financial AI Assistant")
+    st.markdown("Get general financial advice based on FBS offerings. I'm your AI Assistant, how can I assist you today?")
 
     if "messages" not in st.session_state:
         st.session_state.messages = []
